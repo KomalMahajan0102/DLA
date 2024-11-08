@@ -1,0 +1,71 @@
+'''
+Build the Image classification model by dividing the model into following 4 stages:
+a. Loading and preprocessing the image data
+b. Defining the model’s architecture
+c. Training the model
+d. Estimating the model’s performance
+'''
+
+# Import the necessary packages
+import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Conv2D, Dropout, MaxPooling2D
+import matplotlib.pyplot as plt
+import numpy as np
+
+# a. Loading and preprocessing the image data
+mnist = tf.keras.datasets.mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+input_shape = (28, 28, 1)
+
+
+
+# Making sure that the values are float so that we can get decimal points after division
+# print(x_test.shape[0])
+x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
+x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
+
+print("Data type of x_train before: ", x_train.dtype)
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+print("Data type of x_train before: ", x_train.dtype)
+
+# Normalizing the RGB codes by dividing it by max RGB value.
+x_train = x_train/255
+x_test = x_test/255
+print("Shape of Training Data: ", x_train.shape)
+print("Shape of Testing Data: ", x_test.shape)
+
+# b. Defining the model’s architecture
+model = Sequential();
+model.add(Conv2D(28, kernel_size=(3, 3), input_shape = input_shape))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Flatten())
+model.add(Dense(200, activation='relu'))
+model.add(Dropout(0.3))
+model.add(Dense(10, activation='softmax'))
+
+model.summary()
+
+
+# c. Training the model
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, epochs=10)
+
+
+# d. Estimating the model’s performance
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print(f"Loss = {test_loss}")
+print(f"Accuracy = {test_acc}")
+
+# Showing the image at position[] from the dataset
+image = x_train[3]
+plt.imshow(np.squeeze(image), cmap='gray')
+plt.show()
+
+# Predicting the class of the image
+#print(image.shape[0], image.shape[1], image.shape[2])
+#print(image[0], image[1], image[2])
+image = image.reshape(1, image.shape[0], image.shape[1], image.shape[2])
+predicted_value = model.predict([image])
+print("Predicted Class: {}".format(np.argmax(predicted_value)))
